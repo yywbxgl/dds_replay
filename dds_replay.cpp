@@ -4,7 +4,12 @@
 #include <unistd.h>
 #include <json.hpp>
 
+#include "mcap/writer.hpp"
+#include "mcap/reader.hpp"
 
+
+#define MCAP_IMPLEMENTATION
+using mcap::ByteOffset;
 
 int main(int argc, char *argv[])
 {
@@ -12,7 +17,7 @@ int main(int argc, char *argv[])
     int opt;
 
     // -i 指定input mcap文件, 必须
-    // -r id, 从指定的tag开始reolay
+    // -t id, 从指定的tag开始reolay
     std::string input_file;
     int replay_id = 0;
     if (argc < 2) {
@@ -26,7 +31,6 @@ int main(int argc, char *argv[])
                 input_file = optarg;
                 break;
             case 't':
-                // std::cout << "replay from tag: " << optarg << std::endl;
                 replay_id = atoi(optarg);
                 break;
             default:
@@ -37,7 +41,8 @@ int main(int argc, char *argv[])
 
     // 判断 input_file 是否为空
     if (input_file.empty()) {
-        std::cout << "can not find input file: " <<  input_file << std::endl;
+        std::cout << "no input file: " <<  input_file << std::endl;
+        std::cout << "Usage: " << argv[0] << " -i input_file [-t id]" << std::endl;
         return -1;
     }
 
@@ -45,21 +50,16 @@ int main(int argc, char *argv[])
     // 读取与input_file同名， 后缀为tag的json文件
     std::string tag_file = input_file.substr(0, input_file.find_last_of('.')) + ".TAG";
     std::map<int, std::string> tag_map;
-    if (tag_file.empty()) {
-        std::cout << "no tag file: " <<  tag_file << std::endl;
-        // return -1;
+    std::ifstream tag_ifs(tag_file);
+
+    // 解析tag文件
+    if (!tag_ifs.is_open()) {
+        std::cout << "cannot find tag file: " <<  tag_file << std::endl;
     } else {
-         // 读取tag文件, 解析json数据
-        std::ifstream tag_ifs(tag_file);
-        if (!tag_ifs.is_open()) {
-            std::cout << "cannot open tag file: " <<  tag_file << std::endl;
-            return -1;
-        }
         nlohmann::json tag_json;
         tag_ifs >> tag_json;
         tag_ifs.close();
 
-        // 解析tag信息
         std::cout << "tag info: " << tag_file << std::endl;
         if (!tag_json["tags"].empty()) {
             for (auto& tag : tag_json["tags"]) {
@@ -78,7 +78,8 @@ int main(int argc, char *argv[])
 
 
     std::string cmd = "ddsreplayer -i " + input_file;
-    // check tag id 
+    
+    // add replay tag id 
     if (replay_id > 0) {
         if (tag_map.find(replay_id) == tag_map.end()) {
             std::cout << "no such tag id: " << replay_id << std::endl;
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
     }
 
 
-    // 启动dds replay 工具，指定yaml文件
+    // 启动dds replay
     std::cout << "run: " << cmd << std::endl;
     system(cmd.c_str());
 
