@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
-add_executable(dds_replay   main.cpp)
+add_executable(dds_replay   src/main.cpp)
 target_include_directories(dds_replay PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty
     ${CMAKE_CURRENT_SOURCE_DIR}/idl/v2
 )
 
