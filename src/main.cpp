@@ -76,7 +76,7 @@ int parse_tag_list(std::vector<std::string>& tag_list)
 int dds_replay(int tag_id, const std::vector<std::string>& tag_list)
 {
     // replay from tag_id
-    std::string cmd = "ddsreplayer -i " + input_file;
+    std::string cmd = "JMT-Replayer-x86_64.AppImage -i " + input_file;
     if (tag_id > 0) {
         if (tag_id >= tag_list.size()) {
             std::cout << "replay_id is out of range" << std::endl;
